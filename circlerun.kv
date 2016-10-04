@@ -1,0 +1,53 @@
+<GameWindow>:
+	canvas.before:
+		# Main background
+		Color:
+			rgba: (95/255.0, 171/255.0, 255/255.0, 1)
+		Rectangle:
+			size: (self.width, self.height)
+
+	Widget:
+		id: circler_background
+		size: root.width, root.height
+		pos: root.pos
+			
+		# Circle background
+		canvas.before:
+			Color:
+				rgba: (255/255.0, 186/255.0, 81/255.0, 1)
+			Ellipse:
+				# For putting an image at the background. use this:
+				# source: "images/circleBackground.png"
+				size: self.height*0.8, self.height*0.8
+				pos: self.center[0]-self.height*0.4, self.center[1]-self.height*0.4
+			Color:
+				rgba: (163/255.0, 255/255.0, 81/255.0, 1)
+			Line:
+				width: 10
+				circle: (self.center_x, self.center_y, self.height*0.4)
+		#size_hint: (.6, .8)
+
+	# This will go to upwards in order to show the score and level
+	Widget:
+		pos_hint: {'x': 0.4, 'y': 0.4}
+		size_hint: (.2, .2)
+		text: "    " # DEMO
+		id: selam
+
+		canvas.before:
+			Color:
+				rgb: 1,1,1
+			Rectangle:
+				size: 48,48
+				pos: self.center[0]-24, self.center[1]-24
+				source: "atlas://images/centerMachine.atlas/id1"
+
+
+
+	Button:
+		text: 'Bas'
+		size_hint: (0.1, 0.1)
+		#on_press: print "buton", root.center, root.width, root.height
+		on_press: print root.center, root.ids.selam.center, root.ids.circler_background.center; root.atlasTest(); 
+
+
