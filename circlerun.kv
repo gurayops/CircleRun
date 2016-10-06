@@ -1,53 +1,115 @@
+<UserCursor@Widget>:
+	startLocation: 0
+	direction: 0
+	id: cursorRoot
+	canvas.after:
+		Color:
+			rgb: 0, 0, 0
+		Line:
+			width: 5
+			circle: (self.center_x, self.center_y, cursorRoot.width*0.5, self.startLocation, self.startLocation+7)
+	Button:
+		background_normal: ''
+		background_down: ''
+		# print root.center, root.pos, root.size, "==", cursorRoot.center, cursorRoot.pos, cursorRoot.size; 
+		on_press: root.parent.parent.startMove()	
+		Image:
+			source: 'images/direction.png'
+
+
+<ImageButton@ButtonBehavior+Image>
+    source: 'images/button_pressed.png'
+    #size_hint: .5, .5
+
 <GameWindow>:
+	# Main background
 	canvas.before:
-		# Main background
 		Color:
 			rgba: (95/255.0, 171/255.0, 255/255.0, 1)
 		Rectangle:
 			size: (self.width, self.height)
 
-	Widget:
+	# Level and Score Info - LEFT MENU
+	level: 1
+	score: 0
+	BoxLayout:
+		size_hint_x: 0.3
+		orientation: 'vertical'
+		Widget:
+			size_hint_y: .35
+		Label:
+			size_hint_y: .3
+			text: str(root.level)
+			font_size: "80sp"
+			bold: True
+		Label:
+			size_hint_y: .3
+			text: str(root.score)
+			font_size: "50sp"
+			bold: True
+		Widget:
+			size_hint_y: .35
+
+	# Main Scene - MIDDLE PART
+	RelativeLayout:
 		id: circler_background
-		size: root.width, root.height
-		pos: root.pos
-			
-		# Circle background
-		canvas.before:
-			Color:
-				rgba: (255/255.0, 186/255.0, 81/255.0, 1)
-			Ellipse:
-				# For putting an image at the background. use this:
-				# source: "images/circleBackground.png"
-				size: self.height*0.8, self.height*0.8
-				pos: self.center[0]-self.height*0.4, self.center[1]-self.height*0.4
-			Color:
-				rgba: (163/255.0, 255/255.0, 81/255.0, 1)
-			Line:
-				width: 10
-				circle: (self.center_x, self.center_y, self.height*0.4)
-		#size_hint: (.6, .8)
+		#size: root.width, root.height
+		#pos: root.pos
+		size_hint_x: 0.5
+		#canvas.before:
+		#	Rectangle:
+		#		pos: self.pos
+		#		size: self.size
+		Widget:
+			size_hint: (1, 1)
+			pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+			canvas.before:
+				Color:
+					rgba: (1, 1, 1, 1)
+				Line:
+					dash_offset: 5
+					dash_length: 5
+					circle: (self.center_x, self.center_y, min(self.height, self.width)*0.5)
 
+		UserCursor:
+			id: gamer
+			size_hint: (1, 1)
+			#pos_hint: {'x': 0, 'y': 0}
+			pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+
+	BoxLayout:
+		size_hint_x: .2
+		orientation: 'vertical'
+		Widget:
+			size_hint_y: .3
+		Widget:
+			size_hint_y: .3
+		Button:
+			size_hint_y: .4
+			#size_hint_x: .5
+			background_down: 'images/button_notPressed.png'
+			background_normal: 'images/button_pressed.png'
+			allow_stretch: False
+			on_press: root.startMove()
+
+
+			# print root.center, root.pos, root.size, "==", cursorRoot.center, cursorRoot.pos, cursorRoot.size; 
+				
 	# This will go to upwards in order to show the score and level
-	Widget:
-		pos_hint: {'x': 0.4, 'y': 0.4}
-		size_hint: (.2, .2)
-		text: "    " # DEMO
-		id: selam
-
-		canvas.before:
-			Color:
-				rgb: 1,1,1
-			Rectangle:
-				size: 48,48
-				pos: self.center[0]-24, self.center[1]-24
-				source: "atlas://images/centerMachine.atlas/id1"
+	#BoxLayout:
+	#	size_hint_x: .2
+	#	Image:
+	#		source: "images/direction.png"
 
 
 
-	Button:
-		text: 'Bas'
-		size_hint: (0.1, 0.1)
-		#on_press: print "buton", root.center, root.width, root.height
-		on_press: print root.center, root.ids.selam.center, root.ids.circler_background.center; root.atlasTest(); 
+
+
+	#Button:
+	#	text: 'Bas'
+	#	size_hint: (0.1, 0.1)
+	#	#on_press: print "buton", root.center, root.width, root.height
+	#	on_press: print root.center, root.ids.selam.center, root.ids.circler_background.center; root.atlasTest(); 
 
 
