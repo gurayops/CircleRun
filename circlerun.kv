@@ -8,18 +8,12 @@
 		Line:
 			width: 5
 			circle: (self.center_x, self.center_y, cursorRoot.width*0.5, self.startLocation, self.startLocation+7)
-	Button:
-		background_normal: ''
-		background_down: ''
-		# print root.center, root.pos, root.size, "==", cursorRoot.center, cursorRoot.pos, cursorRoot.size; 
-		on_press: root.parent.parent.startMove()	
-		Image:
-			source: 'images/direction.png'
 
 
 <ImageButton@ButtonBehavior+Image>
     source: 'images/button_pressed.png'
     #size_hint: .5, .5
+
 
 <GameWindow>:
 	# Main background
@@ -70,14 +64,13 @@
 					dash_offset: 5
 					dash_length: 5
 					circle: (self.center_x, self.center_y, min(self.height, self.width)*0.5)
-
 		UserCursor:
 			id: gamer
 			size_hint: (1, 1)
 			#pos_hint: {'x': 0, 'y': 0}
 			pos_hint: {'center_x': 0.5, 'center_y': 0.5}
 
-
+	# Main Scene - RIGHT PART
 	BoxLayout:
 		size_hint_x: .2
 		orientation: 'vertical'
@@ -92,24 +85,5 @@
 			background_normal: 'images/button_pressed.png'
 			allow_stretch: False
 			on_press: root.startMove()
-
-
-			# print root.center, root.pos, root.size, "==", cursorRoot.center, cursorRoot.pos, cursorRoot.size; 
-				
-	# This will go to upwards in order to show the score and level
-	#BoxLayout:
-	#	size_hint_x: .2
-	#	Image:
-	#		source: "images/direction.png"
-
-
-
-
-
-	#Button:
-	#	text: 'Bas'
-	#	size_hint: (0.1, 0.1)
-	#	#on_press: print "buton", root.center, root.width, root.height
-	#	on_press: print root.center, root.ids.selam.center, root.ids.circler_background.center; root.atlasTest(); 
 
 
