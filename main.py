@@ -39,6 +39,14 @@ class GameWindow(BoxLayout):
         Clock.unschedule(self.moveUser)
         Clock.schedule_interval(self.moveUser, 1.0 / 60)
 
+    def startAnimation(self):
+        print "Animation started"
+        pass
+
+    def stopAnimation(self):
+        print "Animation has ended"
+        pass
+
     def moveUser(self, dt):
         self.ids.gamer.startLocation = (
             self.ids.gamer.startLocation + self.diff * self.level) % 360

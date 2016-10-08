@@ -1,7 +1,7 @@
 <UserCursor@Widget>:
+	id: cursorRoot
 	startLocation: 0
 	direction: 0
-	id: cursorRoot
 	canvas.after:
 		Color:
 			rgb: 0, 0, 0
@@ -50,6 +50,8 @@
 		#size: root.width, root.height
 		#pos: root.pos
 		size_hint_x: 0.5
+		screenWidth: self.width
+		screenHeight: self.height
 		#canvas.before:
 		#	Rectangle:
 		#		pos: self.pos
@@ -64,6 +66,17 @@
 					dash_offset: 5
 					dash_length: 5
 					circle: (self.center_x, self.center_y, min(self.height, self.width)*0.5)
+			canvas.after:
+				Color:
+					rgba: 1,1,1,1
+				Rectangle:
+					pos: self.center_x-self.width/8, self.center_y-self.width/8
+					size: self.width/4, self.width/4
+					source: "images/center.png"
+		#Image:
+		#	source: "images/direction.png"
+		#	size: self.texture_size
+
 		UserCursor:
 			id: gamer
 			size_hint: (1, 1)
@@ -71,19 +84,20 @@
 			pos_hint: {'center_x': 0.5, 'center_y': 0.5}
 
 	# Main Scene - RIGHT PART
-	BoxLayout:
+	FloatLayout:
 		size_hint_x: .2
-		orientation: 'vertical'
-		Widget:
-			size_hint_y: .3
-		Widget:
-			size_hint_y: .3
+		id: rightMenu
 		Button:
-			size_hint_y: .4
+			pos_hint: {'center': (.5,.5)}
+			sizeCoeff: min(self.parent.size[0], self.parent.size[1])
+			size: self.texture_size
+			#size_hint_y: .4
 			#size_hint_x: .5
+			#allow_stretch: False
 			background_down: 'images/button_notPressed.png'
 			background_normal: 'images/button_pressed.png'
-			allow_stretch: False
-			on_press: root.startMove()
+			text: "selam"
+			on_press: root.startMove(); root.startAnimation()
+			on_release: root.stopAnimation(); print self.sizeCoeff
 
 
