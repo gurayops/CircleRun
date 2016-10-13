@@ -7,6 +7,8 @@ from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
+from kivy.properties import NumericProperty, ListProperty
+from kivy.uix.relativelayout import RelativeLayout
 
 from math import sin, cos, radians
 
@@ -20,69 +22,53 @@ Config.set('graphics', 'width', '1280')
 Config.set('graphics', 'height', '720')
 
 
-class CircleRun(App):
-    """docstring for CircleRun"""
-
-    def __init__(self):
-        super(CircleRun, self).__init__()
-
-    # Do not close completely when app is backgrounded
-    def on_pause(self):
-        return True
-
-    def build(self):
-        appWindow = Game()
-        return appWindow
-
-
-class GameWindow(BoxLayout):
-    """docstring for GameWindow"""
-
-    def __init__(self):
-        super(GameWindow, self).__init__()
-        # Determine the level of the game
-
-    def atlasTest(self):
-        atlas = Atlas('images/centerMachine.atlas')
-        print atlas.textures.keys()
-
-    def startMove(self):
-        print "action started."
-        self.diff = -1 if self.ids.gamer.direction == 1 else 1
-        self.ids.gamer.direction = self.diff
-        Clock.unschedule(self.moveUser)
-        Clock.schedule_interval(self.moveUser, 1.0 / 60)
-
-    def startAnimation(self):
-        print "Animation started"
-        pass
-
-    def animateX(self, instance):
-        animation = Animation(pos=(0, 0), t='out_sine')
-        animation += Animation(pos=(400, 400), t='out_sine')
-        # animation += Animation(pos=(200, 200), t='in_circ')
-        # animation &= Animation(size_hint=(.3, .3))
-        # animation += Animation(size_hint=(.5, .5))
-        animation.start(instance)
-
-    def stopAnimation(self):
-        print "Animation has ended"
-        pass
-
-    def moveUser(self, dt):
-        self.ids.gamer.startLocation = (
-            self.ids.gamer.startLocation + self.diff * self.level) % 360
-
-
 class PlayGround(Widget):
     """docstring for PlayGround"""
+    radius = NumericProperty()
+
+    def __init__(self, **kwargs):
+        super(PlayGround, self).__init__(**kwargs)
+        self.created = False
+        # self.start()
+
+    def on_touch_down(self, x):
+        print "Playground; Radius: %s, Size: %s, Center: %s, Pos: %s" % (self.radius, self.size, self.center, self.pos), x
+
+    def on_pos(self, x, y):
+        # print x, y
+        self.start()
+        # print "resize"
+
+    def start(self):
+        # print "konum, boyut", self.pos, self.size, self.size_hint
+        self.coins = Coins(size=self.size, pos=self.pos)
+        # print "merkezler: ", self.center, self.coins.center
+        self.setCoins(40)
+        self.add_widget(self.coins)
 
     def find_location(self, angleInDegree):
         """Find position of corresponding degree"""
         angle = radians(angleInDegree)
-        x = int(self.radius * cos(angle))
-        y = int(self.radius * sin(angle))
+        # self.radius = self.height / 2
+        x = int(self.radius * cos(angle)) + self.center_x
+        y = int(self.radius * sin(angle)) + self.center_y + 36
+        print "*****", self.x, self.y, x, y, self.center, "*****"
         return x, y
+
+    def setCoins(self, count):
+        if self.created:
+            return
+        self.created = True
+        angleBetweenCoins = 360.0 / count
+
+        for i in range(count):
+            pos = self.find_location(i * angleBetweenCoins)
+            # print pos
+            if i is 0:
+                print "Konum: %s, aci: %s" % (pos, i * angleBetweenCoins)
+            coinToAdd = Coin(center=pos)
+            # print "Added, center:", pos, "coin center:", coinToAdd.center
+            self.add_widget(coinToAdd)
 
     def update(self):
         pass
@@ -98,11 +84,22 @@ class UserObject(Widget):
 class Coin(Image):
     """docstring for Coin"""
 
-    def __init__(self, source="images/coinGold.png", size=0):
-        super(Coin, self).__init__(source=source)
+    def __init__(self, source="images/coinGold.png", size=0, **kwargs):
+        super(Coin, self).__init__(source=source, **kwargs)
         self.source = source
-        if not size:
-            self.size = self.texture_size
+        # if not size:
+        #    self.size = self.texture_size
+
+
+class Coins(Widget):
+    """docstring for Coins"""
+
+    def __init__(self, **kwargs):
+        super(Coins, self).__init__(**kwargs)
+
+    def update(self, dt):
+        for coin in self.children:
+            coin.update()
 
 
 class Enemy(Image):
@@ -125,7 +122,8 @@ class Game(FloatLayout):
             size_hint=(.3, .3), t="out_sine",
             d=.2)
 
-        self.buttonPressAnimation = self.buttonExpandAnimation + self.buttonShrinkAnimation
+        self.buttonPressAnimation = self.buttonExpandAnimation\
+            + self.buttonShrinkAnimation
         self.buttonPressAnimation.repeat = "True"
 
     def startTurn(self, button):
@@ -141,6 +139,21 @@ class Game(FloatLayout):
 
     def update(self):
         pass
+
+
+class CircleRun(App):
+    """docstring for CircleRun"""
+
+    def __init__(self):
+        super(CircleRun, self).__init__()
+
+    # Do not close completely when app is backgrounded
+    def on_pause(self):
+        return True
+
+    def build(self):
+        appWindow = Game()
+        return appWindow
 
 
 if __name__ == '__main__':
