@@ -15,6 +15,10 @@
     #size_hint: .5, .5
 
 
+<CircleObjects>:
+	width: self.height
+
+
 <PlayGround>:
 	id: playGround
 	circleCenter: self.center
@@ -27,29 +31,29 @@
 			dash_offset: 5
 			dash_length: 5
 			circle: (self.center_x, self.center_y, self.radius)
-		Color:
-			rgba: (0, 0, 0, .3)
-		Rectangle:
-			pos: self.pos
-			size: self.size
-
+		# Color:
+		# 	rgba: (0, 0, 0, .3)
+		# Rectangle:
+		# 	pos: self.pos
+		# 	size: self.size
 
 	Image:
 		id: centerImage
 		source: "images/center.png"
 		size_hint: (.2, .2)
-		center: playGround.center
+		pos_hint: {'center_x': .5, 'center_y': .5}
 
 
 <Game>:
 	id: gameWindow
 	score: 0
-	canvas.after:
-		Color:
-			rgba: (0, 1, 0, .3)
-		Rectangle:
-			pos: self.pos
-			size: self.size
+	# canvas.after:
+	# 	Color:
+	# 		rgba: (0, 1, 0, .3)
+	# 	Rectangle:
+	# 		pos: self.pos
+	# 		size: self.size
+
 	Image:
 		id: background
 		source: "images/background.png"
@@ -83,10 +87,11 @@
 		id: pg
 		size_hint: (.6, .9)
 		pos_hint: {'center_x': .5, 'center_y': .5}
-		# on_touch_down: print "Playground; Radius: %s, Size: %s, Center: %s, Pos: %s" %(self.radius, self.size, self.center, self.pos)
 
 		
 
+
+	
 
 
 		

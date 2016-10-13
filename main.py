@@ -1,17 +1,13 @@
 # -*-coding:utf-8-*-
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.atlas import Atlas
 from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
-from kivy.properties import NumericProperty, ListProperty
-from kivy.uix.relativelayout import RelativeLayout
+from kivy.properties import NumericProperty
 
 from math import sin, cos, radians
-
 
 from kivy.core.audio import SoundLoader
 directionChangeSound = SoundLoader.load("buttonSound.wav")
@@ -22,63 +18,108 @@ Config.set('graphics', 'width', '1280')
 Config.set('graphics', 'height', '720')
 
 
-class PlayGround(Widget):
+class PlayGround(FloatLayout):
     """docstring for PlayGround"""
+    # Radius of main circle
     radius = NumericProperty()
 
     def __init__(self, **kwargs):
         super(PlayGround, self).__init__(**kwargs)
-        self.created = False
-        # self.start()
 
-    def on_touch_down(self, x):
-        print "Playground; Radius: %s, Size: %s, Center: %s, Pos: %s" % (self.radius, self.size, self.center, self.pos), x
-
-    def on_pos(self, x, y):
-        # print x, y
-        self.start()
-        # print "resize"
-
-    def start(self):
-        # print "konum, boyut", self.pos, self.size, self.size_hint
-        self.coins = Coins(size=self.size, pos=self.pos)
-        # print "merkezler: ", self.center, self.coins.center
+        # Container for all the objects
+        self.circle = CircleObjects(size_hint_y=1, size_hint_x=None, pos_hint={
+            'center_x': 0.5, 'center_y': 0.5})
         self.setCoins(40)
-        self.add_widget(self.coins)
+        self.add_widget(self.circle)
 
-    def find_location(self, angleInDegree):
+        pos_hint = self.find_ratio(90)
+        self.user = UserObject(angle=90, pos_hint={'center_x': pos_hint[
+            0], 'center_y': pos_hint[1]}, size_hint=(.1, .1))
+        self.circle.add_widget(self.user)
+
+    # It is only for debug purposes
+    def on_touch_down(self, x):
+        print "PlayGround; Radius: %s, Size: %s, Center: %s, Pos: %s" %\
+            (self.radius, self.size, self.center, self.pos), x
+
+    def find_ratio(self, angleInDegree):
         """Find position of corresponding degree"""
         angle = radians(angleInDegree)
-        # self.radius = self.height / 2
-        x = int(self.radius * cos(angle)) + self.center_x
-        y = int(self.radius * sin(angle)) + self.center_y + 36
-        print "*****", self.x, self.y, x, y, self.center, "*****"
+        # Using +1 offset in order to put the result in the range of 0 and 1
+        x = (cos(angle) + 1) / 2
+        y = (sin(angle) + 1) / 2
         return x, y
 
     def setCoins(self, count):
-        if self.created:
-            return
-        self.created = True
+        """
+        Add objects around the circle with equal space.
+        """
         angleBetweenCoins = 360.0 / count
 
         for i in range(count):
-            pos = self.find_location(i * angleBetweenCoins)
-            # print pos
-            if i is 0:
-                print "Konum: %s, aci: %s" % (pos, i * angleBetweenCoins)
-            coinToAdd = Coin(center=pos)
-            # print "Added, center:", pos, "coin center:", coinToAdd.center
-            self.add_widget(coinToAdd)
+            # Calculate the relative position
+            pos_hint = self.find_ratio(i * angleBetweenCoins)
+
+            # This is start location of user
+            if i == count / 4:
+                continue
+
+            # Create coin widget with .1 size ratio
+            coinToAdd = Coin(pos_hint={'center_x': pos_hint[
+                             0], 'center_y': pos_hint[1]}, size_hint=(.1, .1))
+            # Add current coin to the circle
+            self.circle.add_widget(coinToAdd)
 
     def update(self):
-        pass
+        self.circle.update(self.user)
 
 
-class UserObject(Widget):
+class UserObject(Image):
     """docstring for UserObject"""
+    # Direction of user object
+    direction = NumericProperty(0)
+    angle = NumericProperty(90)
 
-    def __init__(self):
-        super(UserObject, self).__init__()
+    def __init__(self, angle, source="images/user.zip", anim_delay=.1,
+                 **kwargs):
+        super(UserObject, self).__init__(**kwargs)
+        self.source = source
+        self.anim_delay = anim_delay
+        self.angle = angle
+        self.difference = 2
+
+    def changeDirection(self):
+        self.direction = 0 if self.direction == 1 else 1
+        print "New direction:", self.direction
+
+    def on_angle(self, *ignore):
+        pos_hint = self.parent.parent.find_ratio(self.angle)
+        self.pos_hint = {'center_x': pos_hint[0], 'center_y': pos_hint[1]}
+
+    def update(self):
+        # print "user object updated"
+        if self.direction == 0:
+            self.angle -= self.difference
+        elif self.direction == 1:
+            self.angle += self.difference
+
+
+class CircleObjects(FloatLayout):
+    """docstring for Coins"""
+
+    def __init__(self, **kwargs):
+        super(CircleObjects, self).__init__(**kwargs)
+
+    def update(self, user):
+        for child in self.children:
+            if type(child) == Coin:
+                child.update()
+                if user.collide_widget(child):
+                    self.remove_widget(child)
+                    self.parent.parent.score += 1
+            elif type(child) == UserObject:
+                # here is user object
+                child.update()
 
 
 class Coin(Image):
@@ -87,19 +128,9 @@ class Coin(Image):
     def __init__(self, source="images/coinGold.png", size=0, **kwargs):
         super(Coin, self).__init__(source=source, **kwargs)
         self.source = source
-        # if not size:
-        #    self.size = self.texture_size
 
-
-class Coins(Widget):
-    """docstring for Coins"""
-
-    def __init__(self, **kwargs):
-        super(Coins, self).__init__(**kwargs)
-
-    def update(self, dt):
-        for coin in self.children:
-            coin.update()
+    def update(self):
+        pass
 
 
 class Enemy(Image):
@@ -117,28 +148,44 @@ class Game(FloatLayout):
         super(Game, self).__init__()
         self.buttonExpandAnimation = Animation(
             size_hint=(.35, .35), t="out_sine",
-            d=.2)
+            d=.1)
         self.buttonShrinkAnimation = Animation(
-            size_hint=(.3, .3), t="out_sine",
-            d=.2)
+            size_hint=(.3, .3), t="in_sine",
+            d=.1)
 
-        self.buttonPressAnimation = self.buttonExpandAnimation\
-            + self.buttonShrinkAnimation
-        self.buttonPressAnimation.repeat = "True"
+        # Determine the game is started or not when the widget is created
+        self.playing = False
+
+        # Update method
+        Clock.schedule_interval(self.update, 1 / 60.0)
+
+        # Was used for continuous animation. No need anymore and
+        # not working well
+        # self.buttonPressAnimation = self.buttonExpandAnimation\
+        #    + self.buttonShrinkAnimation
+        # self.buttonPressAnimation.repeat = "True"
 
     def startTurn(self, button):
-        self.buttonPressAnimation.start(button)
+        self.buttonShrinkAnimation.cancel_all(button)
+        self.buttonExpandAnimation.start(button)
         directionChangeSound.play()
-        print button.size, button.pos
-        print self.width, self.width
+
+        self.ids.pg.user.changeDirection()
+
+        if not self.playing:
+            self.playing = True
 
     def stopTurn(self, button):
-        self.score += 1
-        self.buttonPressAnimation.cancel(button)
-        # self.buttonShrinkAnimation.start(button)
+        self.buttonExpandAnimation.cancel_all(button)
+        self.buttonShrinkAnimation.start(button)
 
-    def update(self):
-        pass
+    def update(self, *ignore):
+        # Return if the game is not continuing or has not started
+        if not self.playing:
+            return
+
+        # Update the playground
+        self.ids.pg.update()
 
 
 class CircleRun(App):
