@@ -45,7 +45,7 @@
 			size_hint_y: .35
 
 	# Main Scene - MIDDLE PART
-	RelativeLayout:
+	FloatLayout:
 		id: circler_background
 		#size: root.width, root.height
 		#pos: root.pos
@@ -73,9 +73,13 @@
 					pos: self.center_x-self.width/8, self.center_y-self.width/8
 					size: self.width/4, self.width/4
 					source: "images/center.png"
-		#Image:
-		#	source: "images/direction.png"
-		#	size: self.texture_size
+
+		Image:
+			id: animationImage
+			source: "images/direction.png"
+			#size: self.texture_size
+			size_hint: (.2, .2)
+
 
 		UserCursor:
 			id: gamer
@@ -97,7 +101,77 @@
 			background_down: 'images/button_notPressed.png'
 			background_normal: 'images/button_pressed.png'
 			text: "selam"
-			on_press: root.startMove(); root.startAnimation()
+			on_press: root.startMove(); root.startAnimation(); root.animateX(root.ids.animationImage)
 			on_release: root.stopAnimation(); print self.sizeCoeff
+
+
+<PlayGround>:
+	id: playGround
+	circleCenter: self.center
+	radius: self.height / 2
+	#canvas.after:
+	#	Color:
+	#		rgba: (1, 1, 1, .5)
+	#	Rectangle:
+	#		pos: self.pos
+	#		size: self.size
+	canvas.before:
+		Color:
+			rgba: (0, 0, 0,1)
+		Line:
+			dash_offset: 5
+			dash_length: 5
+			circle: (self.center_x, self.center_y, self.radius)
+
+	on_touch_down: print self.radius
+
+	Image:
+		id: centerImage
+		source: "images/center.png"
+		size_hint: (.2, .2)
+		center: playGround.center
+
+<Game>:
+	id: gameWindow
+	score: 0
+	Image:
+		id: background
+		source: "images/background.png"
+		allow_stretch: True
+		keep_ratio: False
+		pos: 0, 0
+		size: root.size
+
+	Image:
+		id: scoreBackground
+		source: "images/scoreBackground.png"
+		size_hint: (.3, .3)
+		pos_hint: {'y': .05}
+		Label:
+			id: scoreDisplay
+			text: str(root.score)
+			center: scoreBackground.center
+			font_size: "60sp"
+			bold: True
+
+	ImageButton:
+		id: directionButton
+		source: "images/directionButton.png"
+		size_hint: (.3, .3)
+		#center: (root.width*0.7, root.height*0.2)
+		pos_hint: {'center_x': .85, 'center_y': 0.2}
+		on_press: root.startTurn(self)
+		on_release: root.stopTurn(self)
+
+	PlayGround:
+		size_hint: (.6, .9)
+		pos_hint: {'center_x': .5, 'center_y': .5}
+		
+
+
+
+		
+
+		
 
 
