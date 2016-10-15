@@ -54,6 +54,7 @@ class PlayGround(FloatLayout):
         """
         Add objects around the circle with equal space.
         """
+        count += 1
         angleBetweenCoins = 360.0 / count
 
         for i in range(count):
