@@ -7,6 +7,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.properties import NumericProperty
 
+from random import randint
 from math import sin, cos, radians
 
 from kivy.core.audio import SoundLoader
@@ -37,10 +38,14 @@ class PlayGround(FloatLayout):
             0], 'center_y': pos_hint[1]}, size_hint=(.1, .1))
         self.circle.add_widget(self.user)
 
+        self.enemies = Enemies(size_hint_y=1, size_hint_x=1, pos_hint={
+            'center_x': 0.5, 'center_y': 0.5})
+        self.add_widget(self.enemies)
+
     # It is only for debug purposes
-    def on_touch_down(self, x):
-        print "PlayGround; Radius: %s, Size: %s, Center: %s, Pos: %s" %\
-            (self.radius, self.size, self.center, self.pos), x
+    # def on_touch_down(self, x):
+    #    print "PlayGround; Radius: %s, Size: %s, Center: %s, Pos: %s" %\
+    #        (self.radius, self.size, self.center, self.pos), x
 
     def find_ratio(self, angleInDegree):
         """Find position of corresponding degree"""
@@ -72,6 +77,7 @@ class PlayGround(FloatLayout):
 
     def update(self):
         self.circle.update(self.user)
+        self.enemies.update(self.user)
 
 
 class UserObject(Image):
@@ -86,18 +92,19 @@ class UserObject(Image):
         self.source = source
         self.anim_delay = anim_delay
         self.angle = angle
-        self.difference = 2
+        self.difference = 1
 
     def changeDirection(self):
         self.direction = 0 if self.direction == 1 else 1
-        print "New direction:", self.direction
+        # print "New direction:", self.direction
 
     def on_angle(self, *ignore):
         pos_hint = self.parent.parent.find_ratio(self.angle)
         self.pos_hint = {'center_x': pos_hint[0], 'center_y': pos_hint[1]}
 
     def update(self):
-        # print "user object updated"
+        # Go to new position by saying angle.
+        # Consider looking on_angle for details
         if self.direction == 0:
             self.angle -= self.difference
         elif self.direction == 1:
@@ -133,12 +140,59 @@ class Coin(Image):
         pass
 
 
+class Enemies(FloatLayout):
+    """docstring for Enemies"""
+
+    def __init__(self, **kwargs):
+        super(Enemies, self).__init__(**kwargs)
+        self.enemy_1 = Enemy(size_hint_y=.05, size_hint_x=None,
+                             pos_hint={'x': .8, 'y': .8})
+        self.enemy_2 = Enemy(size_hint_y=.05, size_hint_x=None)
+        self.enemy_3 = Enemy(size_hint_y=.05, size_hint_x=None)
+        self.allEnemies = [self.enemy_1, self.enemy_2, self.enemy_3]
+
+        for enemy in self.allEnemies:
+            self.add_widget(enemy)
+
+        self.fire()
+
+    def update(self, user):
+        for child in self.allEnemies:
+            child.update()
+
+    def anim_completed(self, anim):
+        print "anim completed", anim, type(anim)
+
+    def fire(self):
+        """Fires 3 enemies"""
+        print "Anim fired..."
+        # self.anim1 = Animation(pos_hint=(.8, .8), t="in_quad")
+        self.anim1 = Animation(pos_hint={'x': 1.2, 'y': 1.2}, t="in_quad")
+        self.anim1.on_complete = self.anim_completed
+        self.anim1.start(self.enemy_1)
+        self.anim1.start(self.enemy_2)
+        self.anim1.start(self.enemy_3)
+
+
 class Enemy(Image):
-    def __init__(self, source="images/flyFly1.png", size=0):
-        super(Coin, self).__init__(source=source)
-        self.source = source
+    def __init__(self, **kwargs):
+        super(Enemy, self).__init__(allow_stretch=True, **kwargs)
+        size = self.texture_size
         if not size:
             self.size = self.texture_size
+        self.state = 1
+
+    def update(self):
+        if self.state is 1:
+            self.source = "atlas://images/bird_anim/wing-up"
+        elif self.state is 2:
+            self.source = "atlas://images/bird_anim/wing-mid"
+        elif self.state is 3:
+            self.source = "atlas://images/bird_anim/wing-down"
+
+        self.state += 1
+        if self.state == 4:
+            self.state = 1
 
 
 class Game(FloatLayout):
