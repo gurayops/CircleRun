@@ -27,9 +27,7 @@ class SoundLoader(object):
 
 
 directionChangeSound = SoundLoader("buttonSound.wav", 10)
-
-directionChangeSound = SoundLoader.load("audio/buttonClickSound.wav")
-coinSound = SoundLoader.load("audio/coinSound.wav")
+coinSound = SoundLoader("audio/coinSound.wav", 10)
 
 # Temporary window size configuration
 # from kivy.config import Config
