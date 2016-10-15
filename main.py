@@ -28,6 +28,9 @@ class SoundLoader(object):
 
 directionChangeSound = SoundLoader("buttonSound.wav", 10)
 
+directionChangeSound = SoundLoader.load("audio/buttonClickSound.wav")
+coinSound = SoundLoader.load("audio/coinSound.wav")
+
 # Temporary window size configuration
 # from kivy.config import Config
 # Config.set('graphics', 'width', '1280')
@@ -45,7 +48,8 @@ class PlayGround(FloatLayout):
         # Container for all the objects
         self.circle = CircleObjects(size_hint_y=1, size_hint_x=None, pos_hint={
             'center_x': 0.5, 'center_y': 0.5})
-        self.setCoins(40)
+        self.count = 40
+        self.setCoins(self.count)
         self.add_widget(self.circle)
 
         pos_hint = self.find_ratio(90)
@@ -143,6 +147,8 @@ class CircleObjects(FloatLayout):
                 if user.collide_widget(child):
                     self.remove_widget(child)
                     self.parent.parent.score += 1
+                    coinSound.play()
+
             elif type(child) == UserObject:
                 # here is user object
                 child.update()
@@ -284,7 +290,6 @@ class Enemy(Image):
             self.source = "atlas://images/bird_anim/wing-mid"
         elif self.state is 3:
             self.source = "atlas://images/bird_anim/wing-down"
-
         self.state += 1
         if self.state == 4:
             self.state = 1
@@ -333,6 +338,7 @@ class Game(FloatLayout):
         self.buttonShrinkAnimation.start(button)
 
     def update(self, *ignore):
+
         # Return if the game is not continuing or has not started
         if self.playing == 0:
             return
