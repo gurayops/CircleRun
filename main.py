@@ -6,17 +6,32 @@ from kivy.animation import Animation
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.properties import NumericProperty
+from kivy.core.audio import SoundLoader as SingleSoundLoader
 
-from random import randint
 from math import sin, cos, radians
 
-from kivy.core.audio import SoundLoader
-directionChangeSound = SoundLoader.load("buttonSound.wav")
+
+class SoundLoader(object):
+    """docstring for MultiSound"""
+
+    def __init__(self, file, num):
+        self.sounds = [SingleSoundLoader.load(file) for i in range(num)]
+        self.num = num
+        self.index = 0
+
+    def play(self):
+        self.sounds[self.index].play()
+        self.index += 1
+        if self.index == self.num:
+            self.index = 0
+
+
+directionChangeSound = SoundLoader("buttonSound.wav", 10)
 
 # Temporary window size configuration
-from kivy.config import Config
-Config.set('graphics', 'width', '1280')
-Config.set('graphics', 'height', '720')
+# from kivy.config import Config
+# Config.set('graphics', 'width', '1280')
+# Config.set('graphics', 'height', '720')
 
 
 class PlayGround(FloatLayout):
@@ -78,7 +93,10 @@ class PlayGround(FloatLayout):
 
     def update(self):
         self.circle.update(self.user)
-        self.enemies.update(self.user)
+
+        # If gameover happens, stop the game
+        if self.enemies.update(self.user) == -1:
+            return True
 
 
 class UserObject(Image):
@@ -146,38 +164,114 @@ class Enemies(FloatLayout):
 
     def __init__(self, **kwargs):
         super(Enemies, self).__init__(**kwargs)
-        self.enemy_1 = Enemy(size_hint_y=.05, size_hint_x=None,
-                             pos_hint={'x': .8, 'y': .8})
-        self.enemy_2 = Enemy(size_hint_y=.05, size_hint_x=None)
-        self.enemy_3 = Enemy(size_hint_y=.05, size_hint_x=None)
-        self.allEnemies = [self.enemy_1, self.enemy_2, self.enemy_3]
+        self.allEnemies = self.set_enemies()
+        self.set_positions(self.allEnemies)
 
         for enemy in self.allEnemies:
             self.add_widget(enemy)
 
-        self.fire()
+        self.userAngle = 90
+        self.userAngleDiff = 1
+        # Duration of animation
+        self.duration = 1
+
+    def set_enemies(self):
+        # Todo: Make enemy count a parameter.
+        self.enemy_1 = Enemy(size_hint_y=.05, size_hint_x=None,
+                             pos_hint={'x': .5, 'y': .5})
+        self.enemy_2 = Enemy(size_hint_y=.05, size_hint_x=None,
+                             pos_hint={'x': .5, 'y': .5})
+        self.enemy_3 = Enemy(size_hint_y=.05, size_hint_x=None,
+                             pos_hint={'x': .5, 'y': .5})
+        return [self.enemy_1, self.enemy_2, self.enemy_3]
+
+    def set_positions(self, enemies):
+        for enemy in enemies:
+            enemy.pos_hint = {'center_x': .5, 'center_y': .5}
 
     def update(self, user):
+        self.userAngle = user.angle
+        self.userAngleDiff = user.difference
         for child in self.allEnemies:
             child.update()
+            # Game Over is Determined Here
+            if child.collide_widget(user):
+                self.anim1.cancel(self.enemy_1)
+                self.anim2.cancel(self.enemy_2)
+                self.anim3.cancel(self.enemy_3)
+                print "Game over"
+                return -1
 
-    def anim_completed(self, anim):
-        print "anim completed", anim, type(anim)
+    def find_ratio(self, angleInDegree):
+        """Find position of corresponding degree"""
+        angle = radians(angleInDegree)
+        # Using +1 offset in order to put the result in the range of 0 and 1
+        x = (cos(angle) + 1) / 2
+        y = (sin(angle) + 1) / 2
+        return x, y
+
+    def anim_completed(self, enemy):
+        # print "anim completed", enemy, type(enemy), dir(enemy)
+        self.set_positions([enemy])
+
+        # Target angle 1
+        t1 = self.find_ratio(
+            self.userAngle + self.userAngleDiff * 60 * self.duration)
+        t2 = self.find_ratio(
+            self.userAngle - self.userAngleDiff * 60 * self.duration)
+        t3 = self.find_ratio(self.userAngle)
+
+        # print "User %d t1 %d t2 %d t3 %d" % (self.userAngle, t1, t2, t3)
+
+        if enemy == self.enemy_1:
+            # Anim 1 restart
+            print "Anim 1 completed, restarting..."
+            # TODO: Get animation target pos_hint and time
+            self.anim1 = Animation(pos_hint={'center_x': t1[0],
+                                             'center_y': t1[1]},
+                                   t="in_quad", d=self.duration)
+            self.anim1.on_complete = self.anim_completed
+            self.anim1.start(self.enemy_1)
+        elif enemy == self.enemy_2:
+            # Anim 2 restart
+            print "Anim 2 completed, restarting..."
+            self.anim2 = Animation(pos_hint={'center_x': t2[0],
+                                             'center_y': t2[1]},
+                                   t="in_quad", d=self.duration)
+            self.anim2.on_complete = self.anim_completed
+            self.anim2.start(enemy)
+        elif enemy == self.enemy_3:
+            # Anim 3 restart
+            print "Anim 3 completed, restarting..."
+            self.anim3 = Animation(pos_hint={'center_x': t3[0],
+                                             'center_y': t3[1]},
+                                   t="in_quad", d=self.duration)
+            self.anim3.on_complete = self.anim_completed
+            self.anim3.start(enemy)
 
     def fire(self):
         """Fires 3 enemies"""
         print "Anim fired..."
         # self.anim1 = Animation(pos_hint=(.8, .8), t="in_quad")
-        self.anim1 = Animation(pos_hint={'x': 1.2, 'y': 1.2}, t="in_quad")
+        self.anim1 = Animation(
+            pos_hint={'center_x': 1.2, 'center_y': 1.2}, t="in_quad")
+        self.anim2 = Animation(
+            pos_hint={'center_x': 1.2, 'center_y': 1.2}, t="in_quad")
+        self.anim3 = Animation(
+            pos_hint={'center_x': 1.2, 'center_y': 1.2}, t="in_quad")
         self.anim1.on_complete = self.anim_completed
+        self.anim2.on_complete = self.anim_completed
+        self.anim3.on_complete = self.anim_completed
         self.anim1.start(self.enemy_1)
-        self.anim1.start(self.enemy_2)
-        self.anim1.start(self.enemy_3)
+        self.anim2.start(self.enemy_2)
+        self.anim3.start(self.enemy_3)
 
 
 class Enemy(Image):
     def __init__(self, **kwargs):
-        super(Enemy, self).__init__(allow_stretch=True, **kwargs)
+        super(Enemy, self).__init__(allow_stretch=True,
+                                    source="atlas://images/bird_anim/wing-up",
+                                    **kwargs)
         size = self.texture_size
         if not size:
             self.size = self.texture_size
@@ -211,8 +305,11 @@ class Game(FloatLayout):
         # Determine the game is started or not when the widget is created
         self.playing = False
 
+        # Determine if the game is ended
+        self.gameOver = False
+
         # Update method
-        Clock.schedule_interval(self.update, 1 / 60.0)
+        self.timer = Clock.schedule_interval(self.update, 1 / 60.0)
 
         # Was used for continuous animation. No need anymore and
         # not working well
@@ -229,6 +326,7 @@ class Game(FloatLayout):
 
         if not self.playing:
             self.playing = True
+            self.ids.pg.enemies.fire()
 
     def stopTurn(self, button):
         self.buttonExpandAnimation.cancel_all(button)
@@ -236,11 +334,18 @@ class Game(FloatLayout):
 
     def update(self, *ignore):
         # Return if the game is not continuing or has not started
-        if not self.playing:
+        if self.playing == 0:
             return
 
+        if self.gameOver == 1:
+            self.timer.cancel()
+            parent = self.parent
+            # TODO: HERE WILL BE UPDATED WHEN MENU COMES
+            # parent.remove_widget(self)
+            # parent.add_widget()
+
         # Update the playground
-        self.ids.pg.update()
+        self.gameOver = self.ids.pg.update()
 
 
 class CircleRun(App):
