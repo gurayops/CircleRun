@@ -72,6 +72,23 @@
 			center: scoreBackground.center
 			font_size: "60sp"
 			bold: True
+			on_text: print scoreBackground.pos
+
+	# TODO: SHOW THE LEVEL
+	
+	#BoxLayout:
+	#	size_hint: (.2, .2)
+	#	pos_hint: {'y': .50}
+	#	orientation: 'vertical'
+	#	Label:
+	#		id: levelText
+	#		text: 'Level'
+	#		font_size: '20sp'
+	#	Label:
+	#		id: level
+	#		text: '1'
+	#		font_size: '30sp'
+
 
 	ImageButton:
 		id: directionButton
@@ -88,13 +105,52 @@
 		pos_hint: {'center_x': .5, 'center_y': .5}
 
 		
-
+<Enemy>:
+	canvas:
+		Color:
+			rgba: 1, 1, 1, .3
+		Rectangle:
+			size: self.size
+			pos: self.pos
 
 	
+<UserObject>:
+	canvas:
+		Color:
+			rgba: 1, 1, 1, .3
+		Rectangle:
+			size: self.size
+			pos: self.pos
 
 
+# Will be in screen end of the game or
+# when level changes
+<ResultScreen>:
+	gameStatus: 'Game Over :('
+	orientation: 'vertical'
+	Label:
+		text: root.gameStatus
+		font_size: '40sp'
+	Label:
+		id: totalScore
+		text: "#todo: total score"
+	BoxLayout:
+		Button:
+			text: 'Main Menu'
+			on_release: root.goMainMenu()
+		Button:
+			text: 'Restart'
+			on_release: root.newGame()
 		
+<Menu>:
+	orientation: 'vertical'
+	Button:
+		text: 'Start'
+		on_press: root.on_start()
+	Button:
+		text: 'High Scores'
+	Button:
+		text: 'Will be used'
 
-		
 
 

@@ -1,12 +1,14 @@
 # -*-coding:utf-8-*-
 from kivy.app import App
-from kivy.uix.widget import Widget
 from kivy.clock import Clock
 from kivy.animation import Animation
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.image import Image
-from kivy.properties import NumericProperty
 from kivy.core.audio import SoundLoader as SingleSoundLoader
+from kivy.properties import NumericProperty
+
+from kivy.uix.image import Image
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
+
 
 from math import sin, cos, radians
 
@@ -30,9 +32,9 @@ directionChangeSound = SoundLoader("buttonSound.wav", 10)
 coinSound = SoundLoader("audio/coinSound.wav", 10)
 
 # Temporary window size configuration
-# from kivy.config import Config
-# Config.set('graphics', 'width', '1280')
-# Config.set('graphics', 'height', '720')
+from kivy.config import Config
+Config.set('graphics', 'width', '1280')
+Config.set('graphics', 'height', '720')
 
 
 class PlayGround(FloatLayout):
@@ -130,6 +132,7 @@ class UserObject(Image):
             self.angle -= self.difference
         elif self.direction == 1:
             self.angle += self.difference
+        self.size = self.texture_size
 
 
 class CircleObjects(FloatLayout):
@@ -292,6 +295,9 @@ class Enemy(Image):
         if self.state == 4:
             self.state = 1
 
+    def on_texture_size(self, x, y):
+        self.size = self.texture_size
+
 
 class Game(FloatLayout):
     """Main game structure"""
@@ -344,12 +350,38 @@ class Game(FloatLayout):
         if self.gameOver == 1:
             self.timer.cancel()
             parent = self.parent
-            # TODO: HERE WILL BE UPDATED WHEN MENU COMES
-            # parent.remove_widget(self)
-            # parent.add_widget()
+            # Make ResultScreen class the root
+            parent.remove_widget(self)
+            parent.add_widget(ResultScreen())
 
         # Update the playground
         self.gameOver = self.ids.pg.update()
+
+
+class ResultScreen(BoxLayout):
+    def changeMainWidget(self, newObj):
+        parent = self.parent
+        parent.remove_widget(self)
+        parent.add_widget(newObj)
+
+    def goMainMenu(self):
+        self.changeMainWidget(Menu())
+
+    def newGame(self):
+        self.changeMainWidget(Game())
+
+
+class Menu(BoxLayout):
+    """TODO: Make this a widget and add some graphics"""
+
+    def __init__(self):
+        super(Menu, self).__init__()
+
+    def on_start(self):
+        print "Game starting"
+        root = self.parent
+        root.remove_widget(self)
+        root.add_widget(Game())
 
 
 class CircleRun(App):
@@ -363,7 +395,9 @@ class CircleRun(App):
         return True
 
     def build(self):
-        appWindow = Game()
+
+        appWindow = FloatLayout()
+        appWindow.add_widget(Game())
         return appWindow
 
 
