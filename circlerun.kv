@@ -128,12 +128,18 @@
 <ResultScreen>:
 	gameStatus: 'Game Over :('
 	orientation: 'vertical'
+	lastScore: 0
+
 	Label:
 		text: root.gameStatus
 		font_size: '40sp'
+
 	Label:
 		id: totalScore
-		text: "#todo: total score"
+		text: "Score: %d" %root.lastScore
+		font_size: '55sp'
+		bold: True
+
 	BoxLayout:
 		Button:
 			text: 'Main Menu'
@@ -141,7 +147,8 @@
 		Button:
 			text: 'Restart'
 			on_release: root.newGame()
-		
+
+
 <Menu>:
 	orientation: 'vertical'
 	Button:

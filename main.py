@@ -352,13 +352,17 @@ class Game(FloatLayout):
             parent = self.parent
             # Make ResultScreen class the root
             parent.remove_widget(self)
-            parent.add_widget(ResultScreen())
+            parent.add_widget(ResultScreen(self.score))
 
         # Update the playground
         self.gameOver = self.ids.pg.update()
 
 
 class ResultScreen(BoxLayout):
+    def __init__(self, lastScore, **kwargs):
+        super(ResultScreen, self).__init__(**kwargs)
+        self.lastScore = lastScore
+
     def changeMainWidget(self, newObj):
         parent = self.parent
         parent.remove_widget(self)
@@ -376,8 +380,12 @@ class Menu(BoxLayout):
 
     def __init__(self):
         super(Menu, self).__init__()
+        pass
 
     def on_start(self):
+        '''
+        Starts a new game.
+        '''
         print "Game starting"
         root = self.parent
         root.remove_widget(self)
@@ -397,6 +405,7 @@ class CircleRun(App):
     def build(self):
 
         appWindow = FloatLayout()
+        # Start directly into a new game
         appWindow.add_widget(Game())
         return appWindow
 
