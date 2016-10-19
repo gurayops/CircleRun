@@ -395,7 +395,10 @@ class Menu(FloatLayout):
 
     def __init__(self):
         super(Menu, self).__init__()
-        pass
+        self.menuAnim = Animation(size_hint=(.7, .7), t='out_quint', duration=.5) + \
+            Animation(size_hint=(.6, .6), t='in_quart', duration=.5)
+        self.menuAnim.repeat = True
+        self.menuAnim.start(self.ids.playButton)
 
     def on_start(self):
         '''
