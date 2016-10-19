@@ -1,3 +1,5 @@
+#:import toRGB kivy.utils.get_color_from_hex
+
 <UserCursor@Widget>:
 	id: cursorRoot
 	startLocation: 0
@@ -13,6 +15,19 @@
 <ImageButton@ButtonBehavior+Image>
     source: 'images/button_pressed.png'
     #size_hint: .5, .5
+
+<MenuButton@ButtonBehavior+Label>
+	bgcolor: (0, 0, 0, 1)
+	canvas.before:
+		Color:
+			rgba: self.bgcolor
+		Rectangle:
+			size: self.size
+			pos: self.pos
+	on_press: self.bgcolor[3] = 0.5
+	on_release: self.bgcolor[3] = 1
+	font_size: "50sp"
+	# font_name: 'Comfortaa'
 
 
 <CircleObjects>:
@@ -151,14 +166,39 @@
 
 <Menu>:
 	orientation: 'vertical'
-	Button:
-		text: 'Start'
-		on_press: root.on_start()
-	Button:
-		text: 'High Scores'
-		on_press: root.high_scores()
-	Button:
-		text: 'Will be used'
+	GridLayout:
+		pos_hint: {'x': 0, 'y': 0}
+		size_hint: (1, 1)
+		rows: 2
+		cols: 2
+		MenuButton:
+			text: 'Start'
+			
+			bgcolor: toRGB("dcb61dff")
+			on_release: root.on_start()
+		MenuButton:
+			text: 'High Scores'
+			bgcolor: toRGB("6b91ffff")
+			on_release: root.high_scores()
+		MenuButton:
+			text: 'Store'
+			bgcolor: toRGB("8d0096ff")
+			on_release: root.high_scores()
+		MenuButton:
+			text: 'Share'
+			bgcolor: toRGB("509b00ff")
+			#on_press: root.high_scores()
+	ImageButton:
+		size_hint_y: .6
+		size_hint_x: .6
+		pos_hint: {'center_x': .5, 'center_y': .5}
+		source: "images/play_comfortaa_text_noglow.png"
+		allow_stretch: True
+		on_press: root.playButtonAnimStart()
+		on_release: root.on_start()
+		
+
+
 
 <HighScores>:
 	orientation: 'vertical'

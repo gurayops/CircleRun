@@ -369,6 +369,9 @@ class Game(FloatLayout):
         # Update the playground
         updateResult = self.ids.pg.update()
 
+        if updateResult == -1:
+            self.gameOver = 1
+
 
 class ResultScreen(BoxLayout):
     def __init__(self, lastScore, **kwargs):
@@ -387,7 +390,7 @@ class ResultScreen(BoxLayout):
         self.changeMainWidget(Game())
 
 
-class Menu(BoxLayout):
+class Menu(FloatLayout):
     """TODO: Make this a widget and add some graphics"""
 
     def __init__(self):
@@ -405,6 +408,10 @@ class Menu(BoxLayout):
 
     def high_scores(self):
         self.changeMainWidget(HighScores())
+
+    def playButtonAnimStart(self):
+        print "Pressed play button"
+        pass
 
     def changeMainWidget(self, newObj):
         parent = self.parent
@@ -436,7 +443,8 @@ class CircleRun(App):
 
         appWindow = FloatLayout()
         # Start directly into a new game
-        appWindow.add_widget(Game())
+        #appWindow.add_widget(Game())
+        appWindow.add_widget(Menu())
         return appWindow
 
 
