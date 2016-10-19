@@ -156,8 +156,18 @@
 		on_press: root.on_start()
 	Button:
 		text: 'High Scores'
+		on_press: root.high_scores()
 	Button:
 		text: 'Will be used'
 
+<HighScores>:
+	orientation: 'vertical'
+	Label:
+		text: 'High Scores'
+	Label:
+		text: 'No Data'
+	Button:
+		text: 'Main Menu'
+		on_press: root.main_menu()
 
 
