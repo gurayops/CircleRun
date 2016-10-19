@@ -391,6 +391,24 @@ class Menu(BoxLayout):
         root.remove_widget(self)
         root.add_widget(Game())
 
+    def high_scores(self):
+        self.changeMainWidget(HighScores())
+
+    def changeMainWidget(self, newObj):
+        parent = self.parent
+        parent.remove_widget(self)
+        parent.add_widget(newObj)
+
+class HighScores(BoxLayout):
+    def __init__(self):
+        super(HighScores, self).__init__()
+    def changeMainWidget(self, newObj):
+        parent = self.parent
+        parent.remove_widget(self)
+        parent.add_widget(newObj)
+
+    def main_menu(self):
+        self.changeMainWidget(Menu())
 
 class CircleRun(App):
     """docstring for CircleRun"""
