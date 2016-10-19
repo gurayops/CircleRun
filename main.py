@@ -100,7 +100,10 @@ class PlayGround(FloatLayout):
 
         # If gameover happens, stop the game
         if self.enemies.update(self.user) == -1:
-            return True
+            return -1
+
+        if self.enemies.get_remaining_count() == 0:
+            return 1
 
 
 class UserObject(Image):
@@ -195,6 +198,14 @@ class Enemies(FloatLayout):
     def set_positions(self, enemies):
         for enemy in enemies:
             enemy.pos_hint = {'center_x': .5, 'center_y': .5}
+
+    def get_remaining_count(self):
+        '''
+        Gets number of enemy elements that are available.
+
+        Useful for finding whether the current level is completed.
+        '''
+        return len(self.allEnemies)
 
     def update(self, user):
         self.userAngle = user.angle
@@ -342,20 +353,21 @@ class Game(FloatLayout):
         self.buttonShrinkAnimation.start(button)
 
     def update(self, *ignore):
-
-        # Return if the game is not continuing or has not started
-        if self.playing == 0:
-            return
-
-        if self.gameOver == 1:
+        # If gameover happened, stop timers and add main window
+        # as our new root widget.
+        if self.gameOver:
             self.timer.cancel()
             parent = self.parent
             # Make ResultScreen class the root
             parent.remove_widget(self)
             parent.add_widget(ResultScreen(self.score))
 
+        # Return if the game is not continuing or has not started
+        if self.playing == 0:
+            return
+
         # Update the playground
-        self.gameOver = self.ids.pg.update()
+        updateResult = self.ids.pg.update()
 
 
 class ResultScreen(BoxLayout):
