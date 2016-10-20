@@ -181,10 +181,11 @@ class Enemies(FloatLayout):
         self.userAngle = 90
         self.userAngleDiff = 1
         # Duration of animation
-        self.duration = 2
+        self.duration = 1
 
-        self.anim_ts = ('in_elastic', 'in_out_bounce',
-                        'out_back', 'out_bounce')
+        # self.anim_ts = ('in_elastic', 'in_out_bounce',
+        #                'out_back', 'out_bounce')
+        self.anim_ts = ['in_quad']
 
     def set_enemies(self):
         # Todo: Make enemy count a parameter.
@@ -224,15 +225,12 @@ class Enemies(FloatLayout):
         """Find position of corresponding degree"""
         angle = radians(angleInDegree)
         # Using +1 offset in order to put the result in the range of 0 and 1
+        # rand lines adds some randomness
         x = (cos(angle) + 1) / 2
+        rand_x = uniform(x / -20, x / 20) + x
         y = (sin(angle) + 1) / 2
-        return x, y
-
-    def find_random_ratio(self, ratio):
-        newRatio = [0, 0]
-        newRatio[0] = uniform(ratio[0] / -10, ratio[0] / 10) + ratio[0]
-        newRatio[1] = uniform(ratio[1] / -10, ratio[1] / 10) + ratio[1]
-        return newRatio
+        rand_y = uniform(y / -20, y / 20) + y
+        return rand_x, rand_y
 
     def anim_completed(self, enemy):
         self.set_positions([enemy])
@@ -243,11 +241,6 @@ class Enemies(FloatLayout):
         t2 = self.find_ratio(
             self.userAngle - self.userAngleDiff * 60 * self.duration)
         t3 = self.find_ratio(self.userAngle)
-
-        # Add some randomness to angles
-        t1 = self.find_random_ratio(t1)
-        t2 = self.find_random_ratio(t2)
-        t3 = self.find_random_ratio(t3)
 
         # Restart the animations
         if enemy == self.enemy_1:
