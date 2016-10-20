@@ -9,8 +9,10 @@ from kivy.uix.image import Image
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 
+from kivy.utils import platform
 
 from math import sin, cos, radians
+from random import uniform, choice
 
 
 class SoundLoader(object):
@@ -31,10 +33,11 @@ class SoundLoader(object):
 directionChangeSound = SoundLoader("audio/buttonClickSound.wav", 10)
 coinSound = SoundLoader("audio/coinSound.wav", 10)
 
-# Temporary window size configuration
-from kivy.config import Config
-Config.set('graphics', 'width', '1280')
-Config.set('graphics', 'height', '720')
+if platform in ['win', 'linux', 'macosx']:
+    # Default window size configuration
+    from kivy.config import Config
+    Config.set('graphics', 'width', '1280')
+    Config.set('graphics', 'height', '720')
 
 
 class PlayGround(FloatLayout):
@@ -60,11 +63,6 @@ class PlayGround(FloatLayout):
         self.enemies = Enemies(size_hint_y=1, size_hint_x=1, pos_hint={
             'center_x': 0.5, 'center_y': 0.5})
         self.add_widget(self.enemies)
-
-    # It is only for debug purposes
-    # def on_touch_down(self, x):
-    #    print "PlayGround; Radius: %s, Size: %s, Center: %s, Pos: %s" %\
-    #        (self.radius, self.size, self.center, self.pos), x
 
     def find_ratio(self, angleInDegree):
         """Find position of corresponding degree"""
@@ -102,7 +100,8 @@ class PlayGround(FloatLayout):
         if self.enemies.update(self.user) == -1:
             return -1
 
-        if self.enemies.get_remaining_count() == 0:
+        # The last will be user, so the level ends here.
+        if len(self.circle.children) == 1:
             return 1
 
 
@@ -122,7 +121,6 @@ class UserObject(Image):
 
     def changeDirection(self):
         self.direction = 0 if self.direction == 1 else 1
-        # print "New direction:", self.direction
 
     def on_angle(self, *ignore):
         pos_hint = self.parent.parent.find_ratio(self.angle)
@@ -183,7 +181,10 @@ class Enemies(FloatLayout):
         self.userAngle = 90
         self.userAngleDiff = 1
         # Duration of animation
-        self.duration = 1
+        self.duration = 2
+
+        self.anim_ts = ('in_elastic', 'in_out_bounce',
+                        'out_back', 'out_bounce')
 
     def set_enemies(self):
         # Todo: Make enemy count a parameter.
@@ -217,7 +218,6 @@ class Enemies(FloatLayout):
                 self.anim1.cancel(self.enemy_1)
                 self.anim2.cancel(self.enemy_2)
                 self.anim3.cancel(self.enemy_3)
-                print "Game over"
                 return -1
 
     def find_ratio(self, angleInDegree):
@@ -228,8 +228,13 @@ class Enemies(FloatLayout):
         y = (sin(angle) + 1) / 2
         return x, y
 
+    def find_random_ratio(self, ratio):
+        newRatio = [0, 0]
+        newRatio[0] = uniform(ratio[0] / -10, ratio[0] / 10) + ratio[0]
+        newRatio[1] = uniform(ratio[1] / -10, ratio[1] / 10) + ratio[1]
+        return newRatio
+
     def anim_completed(self, enemy):
-        # print "anim completed", enemy, type(enemy), dir(enemy)
         self.set_positions([enemy])
 
         # Target angle 1
@@ -239,31 +244,29 @@ class Enemies(FloatLayout):
             self.userAngle - self.userAngleDiff * 60 * self.duration)
         t3 = self.find_ratio(self.userAngle)
 
-        # print "User %d t1 %d t2 %d t3 %d" % (self.userAngle, t1, t2, t3)
+        # Add some randomness to angles
+        t1 = self.find_random_ratio(t1)
+        t2 = self.find_random_ratio(t2)
+        t3 = self.find_random_ratio(t3)
 
+        # Restart the animations
         if enemy == self.enemy_1:
-            # Anim 1 restart
-            print "Anim 1 completed, restarting..."
-            # TODO: Get animation target pos_hint and time
             self.anim1 = Animation(pos_hint={'center_x': t1[0],
                                              'center_y': t1[1]},
-                                   t="in_quad", d=self.duration)
+                                   t=choice(self.anim_ts), d=self.duration)
             self.anim1.on_complete = self.anim_completed
             self.anim1.start(self.enemy_1)
         elif enemy == self.enemy_2:
-            # Anim 2 restart
-            print "Anim 2 completed, restarting..."
             self.anim2 = Animation(pos_hint={'center_x': t2[0],
                                              'center_y': t2[1]},
-                                   t="in_quad", d=self.duration)
+                                   t=choice(self.anim_ts), d=self.duration)
             self.anim2.on_complete = self.anim_completed
             self.anim2.start(enemy)
         elif enemy == self.enemy_3:
-            # Anim 3 restart
             print "Anim 3 completed, restarting..."
             self.anim3 = Animation(pos_hint={'center_x': t3[0],
                                              'center_y': t3[1]},
-                                   t="in_quad", d=self.duration)
+                                   t=choice(self.anim_ts), d=self.duration)
             self.anim3.on_complete = self.anim_completed
             self.anim3.start(enemy)
 
@@ -296,6 +299,10 @@ class Enemy(Image):
         self.state = 1
 
     def update(self):
+        """
+        Enemy effects related to bird_anim atlas.
+        Consists of 3 images.
+        """
         if self.state is 1:
             self.source = "atlas://images/bird_anim/wing-up"
         elif self.state is 2:
@@ -307,13 +314,17 @@ class Enemy(Image):
             self.state = 1
 
     def on_texture_size(self, x, y):
+        """
+        Arranges the image size according to source image
+        """
         self.size = self.texture_size
 
 
 class Game(FloatLayout):
     """Main game structure"""
+    score = NumericProperty(0)
 
-    def __init__(self):
+    def __init__(self, level):
         super(Game, self).__init__()
         self.buttonExpandAnimation = Animation(
             size_hint=(.35, .35), t="out_sine",
@@ -328,8 +339,15 @@ class Game(FloatLayout):
         # Determine if the game is ended
         self.gameOver = False
 
+        # Level and level-dependent calculations
+        self.level = level
+        # Calculate score at beginning
+        self.score = self.level * 40
+        self.updateSpeed = self.level * 5 + 60
+
         # Update method
-        self.timer = Clock.schedule_interval(self.update, 1 / 60.0)
+        self.timer = Clock.schedule_interval(
+            self.update, 1.0 / self.updateSpeed)
 
         # Was used for continuous animation. No need anymore and
         # not working well
@@ -367,10 +385,18 @@ class Game(FloatLayout):
             return
 
         # Update the playground
+        # 1 => Level completed, -1 => Game over.
         updateResult = self.ids.pg.update()
 
         if updateResult == -1:
             self.gameOver = 1
+        elif updateResult == 1:
+            self.playing = 0
+            self.timer.cancel()
+            parent = self.parent
+            # Make ResultScreen class the root
+            parent.remove_widget(self)
+            parent.add_widget(Game(self.level + 1))
 
 
 class ResultScreen(BoxLayout):
@@ -387,7 +413,7 @@ class ResultScreen(BoxLayout):
         self.changeMainWidget(Menu())
 
     def newGame(self):
-        self.changeMainWidget(Game())
+        self.changeMainWidget(Game(0))
 
 
 class Menu(FloatLayout):
@@ -395,7 +421,8 @@ class Menu(FloatLayout):
 
     def __init__(self):
         super(Menu, self).__init__()
-        self.menuAnim = Animation(size_hint_y=.7, t='out_quint', duration=.5) + \
+        self.menuAnim = Animation(size_hint_y=.7, t='out_quint',
+                                  duration=.5) + \
             Animation(size_hint_y=.6, t='in_quart', duration=.5)
         self.menuAnim.repeat = True
         self.menuAnim.start(self.ids.playButton)
@@ -404,17 +431,12 @@ class Menu(FloatLayout):
         '''
         Starts a new game.
         '''
-        print "Game starting"
         root = self.parent
         root.remove_widget(self)
-        root.add_widget(Game())
+        root.add_widget(Game(0))
 
     def high_scores(self):
         self.changeMainWidget(HighScores())
-
-    def playButtonAnimStart(self):
-        print "Pressed play button"
-        pass
 
     def changeMainWidget(self, newObj):
         parent = self.parent

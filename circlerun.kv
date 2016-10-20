@@ -1,17 +1,5 @@
 #:import toRGB kivy.utils.get_color_from_hex
 
-<UserCursor@Widget>:
-	id: cursorRoot
-	startLocation: 0
-	direction: 0
-	canvas.after:
-		Color:
-			rgb: 0, 0, 0
-		Line:
-			width: 5
-			circle: (self.center_x, self.center_y, cursorRoot.width*0.5, self.startLocation, self.startLocation+7)
-
-
 <ImageButton@ButtonBehavior+Image>
     source: 'images/buttons/play/play_comfortaa_text.png'
     #size_hint: .5, .5
@@ -60,7 +48,6 @@
 
 <Game>:
 	id: gameWindow
-	score: 0
 	# canvas.after:
 	# 	Color:
 	# 		rgba: (0, 1, 0, .3)
@@ -121,21 +108,25 @@
 
 		
 <Enemy>:
-	canvas:
-		Color:
-			rgba: 1, 1, 1, .3
-		Rectangle:
-			size: self.size
-			pos: self.pos
+	# Canvas definition for debugging purposes
+	# Should not be used in production
+	#canvas:
+	#	Color:
+	#		rgba: 1, 1, 1, .3
+	#	Rectangle:
+	#		size: self.size
+	#		pos: self.pos
 
 	
 <UserObject>:
-	canvas:
-		Color:
-			rgba: 1, 1, 1, .3
-		Rectangle:
-			size: self.size
-			pos: self.pos
+	# Canvas definition for debugging purposes
+	# Should not be used in production
+	#canvas:
+	#	Color:
+	#		rgba: 1, 1, 1, .3
+	#	Rectangle:
+	#		size: self.size
+	#		pos: self.pos
 
 
 # Will be in screen end of the game or
@@ -173,19 +164,18 @@
 		cols: 2
 		MenuButton:
 			text: 'Start'
-			
 			bgcolor: toRGB("dcb61dff")
 			on_release: root.on_start()
 		MenuButton:
-			text: 'High Scores'
+			text: 'High Scores\n(In Soon)'
 			bgcolor: toRGB("6b91ffff")
 			on_release: root.high_scores()
 		MenuButton:
-			text: 'Store'
+			text: 'Store\n(In Soon)'
 			bgcolor: toRGB("8d0096ff")
 			on_release: root.high_scores()
 		MenuButton:
-			text: 'Share'
+			text: 'Share\n(In Soon)'
 			bgcolor: toRGB("509b00ff")
 			#on_press: root.high_scores()
 	ImageButton:
@@ -194,10 +184,7 @@
 		pos_hint: {'center_x': .5, 'center_y': .5}
 		source: "images/buttons/play/play_comfortaa_text_noglow.png"
 		allow_stretch: True
-		on_press: root.playButtonAnimStart()
 		on_release: root.on_start()
-		
-
 
 
 <HighScores>:
