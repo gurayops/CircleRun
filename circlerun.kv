@@ -13,7 +13,7 @@
 
 
 <ImageButton@ButtonBehavior+Image>
-    source: 'images/button_pressed.png'
+    source: 'images/buttons/play/play_comfortaa_text.png'
     #size_hint: .5, .5
 
 <MenuButton@ButtonBehavior+Label>
@@ -107,7 +107,7 @@
 
 	ImageButton:
 		id: directionButton
-		source: "images/directionButton.png"
+		source: "images/buttons/direction/directionButton.png"
 		size_hint: (.3, .3)
 		#center: (root.width*0.7, root.height*0.2)
 		pos_hint: {'center_x': .85, 'center_y': 0.2}
@@ -192,7 +192,7 @@
 		id: playButton
 		size_hint_y: .6
 		pos_hint: {'center_x': .5, 'center_y': .5}
-		source: "images/play_comfortaa_text_noglow.png"
+		source: "images/buttons/play/play_comfortaa_text_noglow.png"
 		allow_stretch: True
 		on_press: root.playButtonAnimStart()
 		on_release: root.on_start()

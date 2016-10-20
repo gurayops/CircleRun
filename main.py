@@ -28,7 +28,7 @@ class SoundLoader(object):
             self.index = 0
 
 
-directionChangeSound = SoundLoader("buttonSound.wav", 10)
+directionChangeSound = SoundLoader("audio/buttonClickSound.wav", 10)
 coinSound = SoundLoader("audio/coinSound.wav", 10)
 
 # Temporary window size configuration
