@@ -395,8 +395,8 @@ class Menu(FloatLayout):
 
     def __init__(self):
         super(Menu, self).__init__()
-        self.menuAnim = Animation(size_hint=(.7, .7), t='out_quint', duration=.5) + \
-            Animation(size_hint=(.6, .6), t='in_quart', duration=.5)
+        self.menuAnim = Animation(size_hint_y=.7, t='out_quint', duration=.5) + \
+            Animation(size_hint_y=.6, t='in_quart', duration=.5)
         self.menuAnim.repeat = True
         self.menuAnim.start(self.ids.playButton)
 
@@ -421,9 +421,11 @@ class Menu(FloatLayout):
         parent.remove_widget(self)
         parent.add_widget(newObj)
 
+
 class HighScores(BoxLayout):
     def __init__(self):
         super(HighScores, self).__init__()
+
     def changeMainWidget(self, newObj):
         parent = self.parent
         parent.remove_widget(self)
@@ -431,6 +433,7 @@ class HighScores(BoxLayout):
 
     def main_menu(self):
         self.changeMainWidget(Menu())
+
 
 class CircleRun(App):
     """docstring for CircleRun"""
@@ -446,7 +449,7 @@ class CircleRun(App):
 
         appWindow = FloatLayout()
         # Start directly into a new game
-        #appWindow.add_widget(Game())
+        # appWindow.add_widget(Game())
         appWindow.add_widget(Menu())
         return appWindow
 
